@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'pos-mobile-orders',
-      script: './server.js',
+      script: './server/index.js',
       cwd: '/home/jorge/pos_mobile',
       instances: 1,
       exec_mode: 'fork',

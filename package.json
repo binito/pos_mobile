@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "description": "Webapp mobile para registo de pedidos de clientes.",
-  "main": "server.js",
+  "main": "server/index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
-    "check": "node --check server.js && node --check public/app.js"
+    "start": "node server/index.js",
+    "dev": "node server/index.js",
+    "test": "node --test test/*.test.js",
+    "check": "node --check server/index.js && node --check public/app.js"
   },
   "engines": {
     "node": ">=18"
