@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#17201b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Pedidos">
+    <title>Entrar · Pedidos Clientes</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="stylesheet" href="/styles.css?v=20260709-9">
+  </head>
+  <body class="login-page">
+    <main class="login-shell">
+      <form id="loginForm" class="login-card">
+        <p class="eyebrow">Café Martins</p>
+        <h1>Pedidos de clientes</h1>
+        <label>
+          <span>Utilizador</span>
+          <input id="username" autocomplete="username" required autofocus>
+        </label>
+        <label>
+          <span>Password</span>
+          <input id="password" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="primary-button" type="submit">Entrar</button>
+        <p id="loginError" class="login-error" role="status" aria-live="polite"></p>
+      </form>
+    </main>
+
+    <script>
+      if ('serviceWorker' in navigator && window.isSecureContext) {
+        navigator.serviceWorker.register('/sw.js?v=20260710-1').catch(() => {});
+      }
+
+      const form = document.getElementById('loginForm');
+      const error = document.getElementById('loginError');
+      const params = new URLSearchParams(window.location.search);
+      const next = params.get('next') || '/';
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        error.textContent = '';
+        const button = form.querySelector('button');
+        button.disabled = true;
+
+        try {
+          const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: document.getElementById('username').value,
+              password: document.getElementById('password').value,
+              next
+            })
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(payload.error || 'Login falhou.');
+          }
+          window.location.replace(payload.next || '/');
+        } catch (err) {
+          error.textContent = err.message;
+          button.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

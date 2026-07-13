@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#17201b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Pedidos">
+    <title>Pedidos Clientes</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="stylesheet" href="/styles.css?v=20260710-2">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Café Martins</p>
+        <h1>Pedidos de clientes</h1>
+      </div>
+      <div id="syncStatus" class="sync-status">A iniciar</div>
+    </header>
+
+    <nav class="tabs" aria-label="Vistas">
+      <button class="tab is-active" type="button" data-tab="new">Novo pedido</button>
+      <button class="tab" type="button" data-tab="orders">Pedidos</button>
+    </nav>
+
+    <main>
+      <section id="screen-new" class="screen is-active" aria-label="Novo pedido">
+        <div class="workspace">
+          <div class="entry-column">
+            <section class="tool-panel customer-panel" aria-label="Dados do cliente">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Cliente</p>
+                  <h2 id="formTitle">Novo pedido</h2>
+                </div>
+                <button id="newOrderButton" class="ghost-button" type="button">Limpar</button>
+              </div>
+
+              <div class="form-grid">
+                <label>
+                  <span>Nome</span>
+                  <input id="customerName" autocomplete="name" placeholder="Nome do cliente">
+                </label>
+              </div>
+
+              <div id="activeCustomersContainer" class="active-customers-container" hidden>
+                <p class="active-customers-label">Clientes com conta aberta</p>
+                <div id="activeCustomersList" class="active-customers-list"></div>
+              </div>
+            </section>
+
+            <section class="catalog-panel" aria-label="Produtos">
+              <div class="catalog-toolbar">
+                <label class="search-box">
+                  <span>Pesquisar</span>
+                  <input id="productSearch" type="search" autocomplete="off" placeholder="Produto, código ou família">
+                </label>
+                <div id="productCount" class="product-count">0 produtos</div>
+              </div>
+
+              <div id="familyChips" class="family-chips" aria-label="Famílias"></div>
+              <div id="productsGrid" class="products-grid"></div>
+              <div id="productsEmpty" class="empty-state" hidden>Nenhum produto encontrado.</div>
+            </section>
+          </div>
+
+          <aside id="cartPanel" class="cart-panel" aria-label="Resumo do pedido">
+            <div class="cart-header">
+              <div>
+                <p class="eyebrow">Resumo</p>
+                <h2 id="cartTitle">Pedido atual</h2>
+                <p id="cartMeta" class="muted">Sem produtos</p>
+              </div>
+              <button id="closeCartButton" class="icon-button close-cart" type="button" aria-label="Fechar resumo">x</button>
+            </div>
+
+            <div id="cartItems" class="cart-items"></div>
+
+            <details class="manual-line">
+              <summary>Adicionar produto manual</summary>
+              <div class="manual-grid">
+                <input id="manualName" placeholder="Nome">
+                <input id="manualPrice" inputmode="decimal" placeholder="Preço">
+                <input id="manualQty" inputmode="numeric" value="1" aria-label="Quantidade manual">
+                <button id="addManualButton" class="secondary-button" type="button">Adicionar</button>
+              </div>
+            </details>
+
+            <div class="cart-controls">
+              <label>
+                <span>Pagamento</span>
+                <select id="paymentSelect">
+                  <option value="pending">Pendente</option>
+                  <option value="paid">Pago</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="cart-total">
+              <span>Total</span>
+              <strong id="cartTotal">0,00 €</strong>
+            </div>
+
+            <div class="cart-actions">
+              <button id="saveOrderButton" class="primary-button" type="button">Guardar pedido</button>
+              <button id="clearCartButton" class="secondary-button" type="button">Esvaziar</button>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="screen-orders" class="screen" aria-label="Pedidos guardados">
+        <section class="orders-toolbar tool-panel">
+          <label class="search-box">
+            <span>Pesquisar pedidos</span>
+            <input id="orderSearch" type="search" autocomplete="off" placeholder="Cliente, pedido ou produto">
+          </label>
+          <div class="view-toggle">
+            <button id="btnViewIndividual" class="toggle-btn" type="button">Individual</button>
+            <button id="btnViewGrouped" class="toggle-btn is-active" type="button">Por Cliente</button>
+          </div>
+          <a class="secondary-button export-link" href="/api/export.csv" download>Exportar CSV</a>
+        </section>
+
+        <div id="ordersList" class="orders-list"></div>
+        <div id="ordersEmpty" class="empty-state" hidden>Ainda não há pedidos guardados.</div>
+      </section>
+    </main>
+
+    <div id="cartBackdrop" class="sheet-backdrop" hidden></div>
+    <div id="cartDock" class="cart-dock" hidden>
+      <button id="openCartButton" type="button">
+        <span id="dockCount">0 itens</span>
+        <strong id="dockTotal">0,00 €</strong>
+      </button>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="/app.js?v=20260710-3" defer></script>
+  </body>
+</html>
