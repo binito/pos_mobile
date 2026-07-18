@@ -1,0 +1,60 @@
+curl --location 'https://zsroi.zonesoft.org/v1.0/integration/notify' \
+--header 'Authorization: {{APP-KEY}}' \
+--header 'X-Integration-Signature: {{SIGNATURE}}' \
+--header 'Content-Type: application/json' \
+--data '{
+    "eventType": "OPEN_WEBVIEW",
+    "eventOrigin": "CREATE_BOOKING",
+    "idempotencyToken": "123456767889768",
+    "payload": {
+        "devicePartnerId": "base64_encode(serial + _ + loja)",
+        "client_id": "client_id", (disponivel no portal https://developer.zonesoft.org/)
+        "url": "url",
+        "print": {
+            "enabled": true,
+            "printText": "Some printable text"
+        },
+        "attributes": {
+            "clientName": "client name",
+            "scheduleDate": "2024-09-19T10:05:00Z",
+            "pax": 33,
+            "notes": "Eu sou vegetariano"
+        },
+        "actions": [
+            {
+                "type": "BUTTON",               
+                "icon": "ACCEPT",
+                "callback": {
+                    "method": "GET",
+                    "url": "url",
+                    "headers": [
+                        {
+                            "X-API-Key": "api-key"
+                        },
+                        {
+                            "Authorization": "signature"
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "BUTTON",
+                "icon": "REJECT",
+                "callback": {
+                    "method": "POST",
+                    "url": "url",
+                    "body": "Raw string body",
+                    "headers": [
+                        {
+                            "X-API-Key": "api-key"
+                        },
+                        {
+                            "Authorization": "signature"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}'
+

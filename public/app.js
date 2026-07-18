@@ -53,6 +53,7 @@ function collectElements() {
     'screen-orders',
     'formTitle',
     'customerName',
+    'mesaNumber',
     'productSearch',
     'productCount',
     'familyChips',
@@ -153,7 +154,7 @@ function bindEvents() {
     const deleteButton = event.target.closest('[data-delete-order]');
     const toggleGroupButton = event.target.closest('[data-toggle-group]');
     const deleteGroupButton = event.target.closest('[data-delete-group]');
-    
+
     if (editButton) editOrder(editButton.dataset.editOrder);
     if (copyButton) duplicateOrder(copyButton.dataset.copyOrder);
     if (deleteButton) deleteOrder(deleteButton.dataset.deleteOrder);
@@ -444,23 +445,20 @@ function cartTotal() {
   return roundMoney(state.cart.reduce((sum, item) => sum + item.qty * item.unitPrice, 0));
 }
 
-async function saveOrder() {
+async function persistOrder() {
   const customerName = els.customerName.value.trim();
   if (!customerName) {
-    showToast('Indica o nome do cliente.', 'error');
-    els.customerName.focus();
-    return;
+    throw new Error('Indica o nome do cliente.');
   }
-
   if (state.cart.length === 0) {
-    showToast('Adiciona pelo menos um produto.', 'error');
-    return;
+    throw new Error('Adiciona pelo menos um produto.');
   }
 
   const payload = {
     customer: {
       name: customerName
     },
+    mesa: els.mesaNumber.value ? Number(els.mesaNumber.value) : null,
     payment: els.paymentSelect.value,
     items: state.cart.map((item) => ({
       code: item.manual ? '' : item.code,
@@ -473,24 +471,45 @@ async function saveOrder() {
     }))
   };
 
+  const url = state.editingId ? `/api/orders/${encodeURIComponent(state.editingId)}` : '/api/orders';
+  const method = state.editingId ? 'PUT' : 'POST';
+  const response = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const data = await parseApiResponse(response);
+  await loadOrders();
+  return data.order;
+}
+
+async function saveOrder() {
+  if (!els.customerName.value.trim()) {
+    showToast('Indica o nome do cliente.', 'error');
+    els.customerName.focus();
+    return;
+  }
+  if (state.cart.length === 0) {
+    showToast('Adiciona pelo menos um produto.', 'error');
+    return;
+  }
+
+  const wasEditing = Boolean(state.editingId);
+  const mesa = els.mesaNumber.value ? Number(els.mesaNumber.value) : null;
   els.saveOrderButton.disabled = true;
   setSync('A guardar');
 
   try {
-    const url = state.editingId ? `/api/orders/${encodeURIComponent(state.editingId)}` : '/api/orders';
-    const method = state.editingId ? 'PUT' : 'POST';
-    const response = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await parseApiResponse(response);
-
-    await loadOrders();
-    showToast(state.editingId ? 'Pedido atualizado.' : `Pedido ${data.order.id} guardado.`);
+    const order = await persistOrder();
     resetOrderForm();
     switchTab('orders');
-    setSync('Atualizado');
+
+    if (mesa) {
+      await sendOrderToTable(order.id);
+    } else {
+      showToast(wasEditing ? 'Pedido atualizado.' : `Pedido ${order.id} guardado.`);
+      setSync('Atualizado');
+    }
   } catch (error) {
     showToast(error.message, 'error');
     setSync('Erro', true);
@@ -499,10 +518,33 @@ async function saveOrder() {
   }
 }
 
+async function sendOrderToTable(orderId) {
+  const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/send-to-table`, {
+    method: 'POST'
+  });
+  const data = await parseApiResponse(response);
+  state.orders = state.orders.map((entry) => (entry.id === orderId ? data.order : entry));
+  renderOrders();
+
+  const sync = data.order.tableSync;
+  if (sync?.status === 'sent') {
+    showToast(`Enviado para a mesa ${sync.mesa}.`);
+    setSync('Enviado para mesa');
+  } else if (sync?.status === 'partial') {
+    showToast(`Enviado com avisos: ${sync.lastError || 'alguns artigos nao foram enviados'}.`, 'error');
+    setSync('Enviado com avisos', true);
+  } else {
+    showToast(sync?.lastError || 'Falha ao enviar para a mesa.', 'error');
+    setSync('Erro', true);
+  }
+  return data.order;
+}
+
 function resetOrderForm() {
   state.editingId = null;
   state.cart = [];
   els.customerName.value = '';
+  els.mesaNumber.value = '';
   els.paymentSelect.value = 'pending';
   closeCartSheet();
   renderCart();
@@ -580,7 +622,7 @@ function renderGroupOrderCard(group) {
     <article class="order-card group-card${paidClass}" data-group-key="${escapeHtml(group.key)}">
       <div class="order-card-head">
         <div class="group-title">
-          <strong>👤 ${escapeHtml(group.customerName)} <span class="group-badge">${group.orders.length} ${group.orders.length === 1 ? 'pedido' : 'pedidos'}</span></strong>
+          <strong>👤 ${escapeHtml(group.customerName)} <span class="group-badge">${group.orders.length} ${group.orders.length === 1 ? 'pedido' : 'pedidos'}</span>${mesaBadge(group.orders[0]?.mesa)}</strong>
           <span>Conta conjunta (${statusText}) · Último: ${formatDate(group.orders[0].createdAt)}</span>
         </div>
       </div>
@@ -621,7 +663,7 @@ function renderSubOrderCard(order) {
   return `
     <div class="sub-order-card${paidClass}">
       <div class="sub-order-header">
-        <strong>${escapeHtml(order.id)}</strong>
+        <strong>${escapeHtml(order.id)}${mesaBadge(order.mesa)}</strong>
         <span>${formatDate(order.createdAt)}</span>
       </div>
       <p class="order-items">${escapeHtml(orderItemsSummary(order.items))}</p>
@@ -642,7 +684,7 @@ function renderIndividualOrderCard(order) {
     <article class="order-card${paidClass}">
       <div class="order-card-head">
         <div>
-          <strong>${escapeHtml(order.customer?.name || 'Sem cliente')}</strong>
+          <strong>${escapeHtml(order.customer?.name || 'Sem cliente')}${mesaBadge(order.mesa)}</strong>
           <span>${escapeHtml(order.id)} · ${formatDate(order.createdAt)}</span>
         </div>
       </div>
@@ -887,6 +929,7 @@ async function duplicateOrder(orderId) {
     customer: {
       name: order.customer?.name || ''
     },
+    mesa: order.mesa || null,
     payment: order.payment || 'pending',
     items: (order.items || []).map((item) => ({
       code: item.code === 'MANUAL' ? '' : item.code,
@@ -918,6 +961,7 @@ async function duplicateOrder(orderId) {
 
 function fillOrderForm(order) {
   els.customerName.value = order.customer?.name || '';
+  els.mesaNumber.value = order.mesa || '';
   els.paymentSelect.value = paymentLabels[order.payment] ? order.payment : 'pending';
   state.cart = (order.items || []).map((item, index) => {
     const product = state.products.find((entry) => entry.code === item.code);
@@ -971,6 +1015,11 @@ function normalizeText(value) {
 
 function formatMoney(value) {
   return money.format(Number(value) || 0);
+}
+
+function mesaBadge(mesa) {
+  if (!mesa) return '';
+  return `<span class="mesa-badge" style="display:inline-block;background:#ffd60a;color:#1a1a1a;font-weight:700;padding:2px 10px;border-radius:999px;margin-left:8px;font-size:0.85em;">🍽️ Mesa ${escapeHtml(String(mesa))}</span>`;
 }
 
 function formatDate(value) {

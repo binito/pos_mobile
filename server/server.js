@@ -2,7 +2,8 @@ const http = require('http');
 const auth = require('./middleware/auth');
 const { readOrders } = require('./services/orders');
 const { ZONESOFT_ENABLED } = require('./services/zonesoft');
-const { handleApi, sendJson, sendText } = require('./routes/api');
+const { handleApi, sendJson, sendText, parseBody } = require('./routes/api');
+const { handleZsroi } = require('./routes/zsroi');
 const { serveStatic } = require('./routes/static');
 
 function requireAuth(req, res, url) {
@@ -32,6 +33,11 @@ function createServer() {
           orders: orders.length,
           zonesoftEnabled: ZONESOFT_ENABLED
         });
+        return;
+      }
+
+      if (url.pathname.startsWith('/api/zsroi/')) {
+        await handleZsroi(req, res, url, parseBody);
         return;
       }
 

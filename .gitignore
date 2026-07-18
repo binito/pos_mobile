@@ -5,3 +5,5 @@ data/orders.json.bak
 tmp/
 *.log
 __pycache__/
+.DS_Store
+._*

@@ -13,6 +13,7 @@ const {
   PAYMENT_VALUES
 } = require('../services/orders');
 const { sendOrderToZoneSoft } = require('../services/zonesoft');
+const { sendItemsToTable } = require('../services/zonesoftBridge');
 
 const MAX_BODY_BYTES = 1024 * 1024;
 
@@ -127,6 +128,27 @@ async function handleApi(req, res, url) {
     return;
   }
 
+  const sendToTableMatch = url.pathname.match(/^\/api\/orders\/([^/]+)\/send-to-table$/);
+  if (sendToTableMatch && req.method === 'POST') {
+    const orderId = decodeURIComponent(sendToTableMatch[1]);
+    const orders = readOrders();
+    const index = orders.findIndex((order) => order.id === orderId);
+    if (index === -1) {
+      throw new HttpError(404, 'Pedido nao encontrado.');
+    }
+    const order = orders[index];
+    if (!order.mesa) {
+      throw new HttpError(400, 'Este pedido nao tem mesa definida.');
+    }
+    const tableSync = await sendItemsToTable(order.mesa, order.items);
+    order.tableSync = tableSync;
+    order.updatedAt = new Date().toISOString();
+    orders[index] = order;
+    writeOrders(orders);
+    sendJson(res, 200, { order });
+    return;
+  }
+
   const orderMatch = url.pathname.match(/^\/api\/orders\/([^/]+)$/);
   if (orderMatch && req.method === 'PUT') {
     const orderId = decodeURIComponent(orderMatch[1]);
@@ -184,4 +206,4 @@ async function handleApi(req, res, url) {
   sendJson(res, 404, { error: 'Endpoint nao encontrado.' });
 }
 
-module.exports = { handleApi, sendJson, sendText };
+module.exports = { handleApi, sendJson, sendText, parseBody };

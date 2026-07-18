@@ -1,0 +1,160 @@
+curl--location--request POST 'http://exemplo.com/sync/menu \
+--header ' Content-Type: application/json ' \
+--header ' Authorization: TOKEN ' \
+--data-raw '{
+    "families": [{
+            "name": "HAMBURGUER",
+            "subfamilies": [{
+                    "name": "HAMBURGUER",
+                    "products": [
+                        "1978"
+                    ]
+                }
+            ]
+        }
+    ],
+    "products": [{
+            "id": "1978",
+            "name": "Menu Portuguesa",
+            "price": 800,
+            "tax_rate": "13",
+            "image_url": "https:\/\/cdn1.ZoneSoft.org\/repo\/images\/dc0a635b24b1ad7d0d16754df92d60f0\/produtos\/f58f1445eb91515f5a85d962f4c95e81.jpeg",
+            "description": "Menu portuguesa estrelado.",
+            "attributes_groups": [
+                "1978_2",
+                "1978_3",
+                "1978_1"
+            ],
+            "availability": [{
+                    "enabled": true,
+                    "time_periods": [{
+                            "start_time": "09:00",
+                            "end_time": "23:00"
+                        }
+                    ],
+                    "day_of_week": "monday"
+                }, {
+                    "enabled": true,
+                    "time_periods": [{
+                            "start_time": "07:00",
+                            "end_time": "23:00"
+                        }
+                    ],
+                    "day_of_week": "tuesday"
+                }, {
+                    "enabled": true,
+                    "time_periods": [{
+                            "start_time": "09:00",
+                            "end_time": "23:00"
+                        }
+                    ],
+                    "day_of_week": "wednesday"
+                }, {
+                    "enabled": true,
+                    "time_periods": [{
+                            "start_time": "09:00",
+                            "end_time": "23:00"
+                        }
+                    ],
+                    "day_of_week": "thursday"
+                }, {
+                    "enabled": true,
+                    "time_periods": [{
+                            "start_time": "09:00",
+                            "end_time": "23:00"
+                        }
+                    ],
+                    "day_of_week": "friday"
+                }, {
+                    "enabled": true,
+                    "time_periods": [{
+                            "start_time": "09:00",
+                            "end_time": "23:00"
+                        }
+                    ],
+                    "day_of_week": "saturday"
+                }, {
+                    "enabled": true,
+                    "time_periods": [{
+                            "start_time": "09:00",
+                            "end_time": "23:00"
+                        }
+                    ],
+                    "day_of_week": "sunday"
+                }
+            ]
+        }
+    ],
+    "attribute_groups": [{
+            "id": "1978_2",
+            "name": "Acompanhamento",
+            "min": 1,
+            "max": 1,
+            "attributes": [
+                "1978_2_1908",
+                "1978_2_170"
+            ]
+        }, {
+            "id": "1978_3",
+            "name": "Bebida",
+            "min": 1,
+            "max": 1,
+            "attributes": [
+                "1978_3_399",
+                "1978_3_390"
+            ]
+        }, {
+            "id": "1978_1",
+            "name": "Menu Portuguesa",
+            "min": 1,
+            "max": 1,
+            "attributes": [
+                "1978_1_1976"
+            ]
+        }
+    ],
+    "attributes": [{
+            "id": "1978_2_1908",
+            "name": "ARROZ THAI",
+            "selected_by_default": "false",
+            "price_impact": "0.00",
+            "tax_rate": "13",
+            "attribute_groups": []
+        }, {
+            "id": "1978_2_170",
+            "name": "BATATA RODELA",
+            "selected_by_default": "false",
+            "price_impact": "0.00",
+            "tax_rate": "13",
+            "attribute_groups": []
+        }, {
+            "id": "1978_3_399",
+            "name": "FANTA ANANAS",
+            "selected_by_default": "false",
+            "price_impact": "0.00",
+            "tax_rate": "23",
+            "attribute_groups": []
+        }, {
+            "id": "1978_3_390",
+            "name": "FANTA LARANJA",
+            "selected_by_default": "false",
+            "price_impact": "0.00",
+            "tax_rate": "23",
+            "attribute_groups": [],
+            "packaging":"1991"
+        }, {
+            "id": "1978_1_1976",
+            "name": "CHAMPIGNON",
+            "selected_by_default": "false",
+            "price_impact": "0.00",
+            "tax_rate": "13",
+            "attribute_groups": []
+        }
+    ],
+    "packagings":[{
+        "id": "1991",
+        "reference_name": "Deposit Return System (DRS)",
+        "price": 10
+    }]
+}
+'

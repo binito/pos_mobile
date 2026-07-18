@@ -3,6 +3,7 @@ module.exports = {
     {
       name: 'pos-mobile-orders',
       script: './server/index.js',
+      node_args: '--env-file=.env',
       cwd: '/home/jorge/pos_mobile',
       instances: 1,
       exec_mode: 'fork',

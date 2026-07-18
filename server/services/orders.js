@@ -162,11 +162,18 @@ function normalizeOrderPayload(payload, existing = null) {
   const status = STATUS_VALUES.has(payload.status) ? payload.status : existing?.status || 'open';
   const payment = PAYMENT_VALUES.has(payload.payment) ? payload.payment : existing?.payment || 'pending';
 
+  const mesaRaw = payload.mesa ?? existing?.mesa;
+  const mesa = mesaRaw === null || mesaRaw === undefined || mesaRaw === ''
+    ? null
+    : Math.round(Number(mesaRaw));
+
   return {
     id: existing?.id || null,
     createdAt: existing?.createdAt || now,
     updatedAt: now,
     zonesoft: existing?.zonesoft || null,
+    tableSync: existing?.tableSync || null,
+    mesa: Number.isFinite(mesa) && mesa > 0 ? mesa : null,
     customer: {
       name: safeString(payload.customer?.name, 120),
       phone: safeString(payload.customer?.phone, 40)

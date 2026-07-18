@@ -1,0 +1,317 @@
+{
+	"info": {
+		"_postman_id": "4c01b62d-3a50-40f0-b089-14890fa8b8fa",
+		"name": "Developer API Zonesoft",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16392832",
+		"_collection_link": "https://speeding-crater-694094.postman.co/workspace/Team-Workspace~53eabd40-d055-4efe-81f3-033a70eb195d/collection/16392832-4c01b62d-3a50-40f0-b089-14890fa8b8fa?action=share&source=collection_link&creator=16392832"
+	},
+	"item": [
+		{
+			"name": "SEND TO APIZSROI",
+			"item": [
+				{
+					"name": "ORDER",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"signature\", CryptoJS.HmacSHA256(pm.request.body.raw, \"YOUR_API_SECRET\").toString(CryptoJS.digest));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "YOUR_API_KEY",
+								"type": "text"
+							},
+							{
+								"key": "X-Integration-Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"order_id\": \"unique-order-id\",\r\n    \"store_id\": \"<your_store_id>\",\r\n    \"type_order\": \"DELIVERY\",\r\n    \"order_time\": \"2020-11-09 12:24:53\",\r\n    \"estimated_pickup_time\": \"2020-11-09 12:45:44\",\r\n    \"payment_method\": \"CASH\",\r\n    \"currency\": \"EUR\",\r\n    \"delivery_fee\": 0,\r\n    \"courier\": {\r\n        \"name\": \"Flash\",\r\n        \"phone_number\": \"<phone_number>\",\r\n        \"license_plate\": \"AA-00-AA\"\r\n    },\r\n    \"customer\": {\r\n        \"name\": \"<Name>\",\r\n        \"phone_number\": \"<phone_number>\",\r\n        \"nif\": \"<NIF>\"\r\n    },\r\n    \"products\": [\r\n        {\r\n            \"quantity\": 1,\r\n            \"price\": 10.00,\r\n            \"discount\": 0,\r\n            \"name\": \"PRODUT_NAME\",\r\n            \"id\": \"pd1\",\r\n            \"attributes\": [\r\n                {\r\n                    \"quantity\": 1,\r\n                    \"id\": \"at1\",\r\n                    \"name\": \"ATRIBUTES NAME\",\r\n                    \"price\": 3.00,\r\n                    \"discount\": 0\r\n                },\r\n                {\r\n                    \"quantity\": 1,\r\n                    \"id\": \"at2\",\r\n                    \"name\": \"ATRIBUTES NAME\",\r\n                    \"price\": 0,\r\n                    \"discount\": 0\r\n                },\r\n                {\r\n                    \"quantity\": 1,\r\n                    \"id\": \"at3\",\r\n                    \"name\": \"ATRIBUTES NAME\",\r\n                    \"price\": 0,\r\n                    \"discount\": 0\r\n                }\r\n            ]\r\n        }\r\n    ],\r\n    \"delivery_address\": \"ENDEREÇO DA MORADA\",\r\n    \"pick_up_code\": \"000\",\r\n    \"is_picked_up_by_customer\": false,\r\n    \"discounted_products_total\": \"<partner_discounted_products_total>\",\r\n    \"total_customer_to_pay\": \"<total_customer_to_pay>\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://zsroi.zonesoft.org/v1.0/integration/order",
+							"protocol": "https",
+							"host": [
+								"zsroi",
+								"zonesoft",
+								"org"
+							],
+							"path": [
+								"v1.0",
+								"integration",
+								"order"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TABLES",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"hmac\", CryptoJS.HmacSHA256(\"\", \"YOUR_API_SECRET\").toString(CryptoJS.digest));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "YOUR_API_KEY",
+								"type": "text"
+							},
+							{
+								"key": "X-Integration-Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://zsroi.zonesoft.org/v1.0/integration/U0dSTVVQRUZaQV8yNw==",
+							"protocol": "https",
+							"host": [
+								"zsroi",
+								"zonesoft",
+								"org"
+							],
+							"path": [
+								"v1.0",
+								"integration",
+								"U0dSTVVQRUZaQV8yNw=="
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "REVERSATION TABLE",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"signature\", CryptoJS.HmacSHA256(pm.request.body.raw, \"YOUR_API_SECRET\").toString(CryptoJS.digest));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "YOUR_API_KEY",
+								"type": "text"
+							},
+							{
+								"key": "X-Integration-Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"eventType\": \"OPEN_WEBVIEW\",\r\n    \"eventOrigin\": \"CREATE_BOOKING\",\r\n    \"idempotencyToken\": \"123456767889768\",\r\n    \"payload\": {\r\n        \"devicePartnerId\": \"\",\r\n        \"client_id\": \"\",\r\n        \"url\": \"url\",\r\n        \"print\": {\r\n            \"enabled\": true,\r\n            \"printText\": \"Some printable text\"\r\n        },\r\n        \"attributes\": {\r\n            \"clientName\": \"client name\",\r\n            \"scheduleDate\": \"2023-06-26T10:05:00Z\",\r\n            \"pax\": 33,\r\n            \"notes\": \"Eu sou vegetariano\"\r\n        },\r\n        \"actions\": [\r\n            {\r\n                \"type\": \"BUTTON\",\r\n                \"icon\": \"ACCEPT\",\r\n                \"callback\": {\r\n                    \"method\": \"GET\",\r\n                    \"url\": \"url\",\r\n                    \"headers\": [\r\n                        {\r\n                            \"X-API-Key\": \"fewfewfew\"\r\n                        },\r\n                        {\r\n                            \"Authorization\": \"Bearer KSDJLFSDHLK328947SDJFK237890\"\r\n                        }\r\n                    ]\r\n                }\r\n            },\r\n            {\r\n                \"type\": \"BUTTON\",\r\n                \"icon\": \"REJECT\",\r\n                \"callback\": {\r\n                    \"method\": \"POST\",\r\n                    \"url\": \"url\",\r\n                    \"body\": \"Raw string body\",\r\n                    \"headers\": [\r\n                        {\r\n                            \"X-API-Key\": \"fewfewfew\"\r\n                        },\r\n                        {\r\n                            \"Authorization\": \"Bearer KSDJLFSDHLK328947SDJFK237890\"\r\n                        }\r\n                    ]\r\n                }\r\n            }\r\n        ]\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://zsroi.zonesoft.org/v1.0/integration/notify",
+							"protocol": "https",
+							"host": [
+								"zsroi",
+								"zonesoft",
+								"org"
+							],
+							"path": [
+								"v1.0",
+								"integration",
+								"notify"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "# Endpoints to send the API-ZSROI"
+		},
+		{
+			"name": "INTEGRATOR ENDPOINTS",
+			"item": [
+				{
+					"name": "LOGIN",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"app_store_username\": \"ZONESOFT\",\r\n    \"app_store_secret\": \"PASSZONESOFT\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint_login}}",
+							"host": [
+								"{{endpoint_login}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "MENU DATA",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "TOKEN",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"families\": [\r\n        {\r\n            \"name\": \"HAMBURGUER\",\r\n            \"subfamilies\": [\r\n                {\r\n                    \"name\": \"HAMBURGUER\",\r\n                    \"products\": [\r\n                        \"1978\"\r\n                    ]\r\n                }\r\n            ]\r\n        }\r\n    ],\r\n    \"products\": [\r\n        {\r\n            \"id\": \"1978\",\r\n            \"name\": \"Menu Portuguesa\",\r\n            \"price\": \"8.00\",\r\n            \"tax_rate\": 13,\r\n            \"image_url\": \"https:\\/\\/cdn1.zonesoft.org\\/repo\\/images\\/dc0a635b24b1ad7d0d16754df92d60f0\\/produtos\\/f58f1445eb91515f5a85d962f4c95e81.jpeg\",\r\n            \"description\": \"Menu portuguesa estrelado.\",\r\n            \"attributes_groups\": [\r\n                \"1978_2\",\r\n                \"1978_3\",\r\n                \"1978_1\"\r\n            ],\r\n            \"availability\": [\r\n                {\r\n                    \"enabled\": true,\r\n                    \"time_periods\": [\r\n                        {\r\n                            \"start_time\": \"09:00\",\r\n                            \"end_time\": \"23:00\"\r\n                        }\r\n                    ],\r\n                    \"day_of_week\": \"monday\"\r\n                },\r\n                {\r\n                    \"enabled\": true,\r\n                    \"time_periods\": [\r\n                        {\r\n                            \"start_time\": \"07:00\",\r\n                            \"end_time\": \"23:00\"\r\n                        }\r\n                    ],\r\n                    \"day_of_week\": \"tuesday\"\r\n                },\r\n                {\r\n                    \"enabled\": true,\r\n                    \"time_periods\": [\r\n                        {\r\n                            \"start_time\": \"09:00\",\r\n                            \"end_time\": \"23:00\"\r\n                        }\r\n                    ],\r\n                    \"day_of_week\": \"wednesday\"\r\n                },\r\n                {\r\n                    \"enabled\": true,\r\n                    \"time_periods\": [\r\n                        {\r\n                            \"start_time\": \"09:00\",\r\n                            \"end_time\": \"23:00\"\r\n                        }\r\n                    ],\r\n                    \"day_of_week\": \"thursday\"\r\n                },\r\n                {\r\n                    \"enabled\": true,\r\n                    \"time_periods\": [\r\n                        {\r\n                            \"start_time\": \"09:00\",\r\n                            \"end_time\": \"23:00\"\r\n                        }\r\n                    ],\r\n                    \"day_of_week\": \"friday\"\r\n                },\r\n                {\r\n                    \"enabled\": true,\r\n                    \"time_periods\": [\r\n                        {\r\n                            \"start_time\": \"09:00\",\r\n                            \"end_time\": \"23:00\"\r\n                        }\r\n                    ],\r\n                    \"day_of_week\": \"saturday\"\r\n                },\r\n                {\r\n                    \"enabled\": true,\r\n                    \"time_periods\": [\r\n                        {\r\n                            \"start_time\": \"09:00\",\r\n                            \"end_time\": \"23:00\"\r\n                        }\r\n                    ],\r\n                    \"day_of_week\": \"sunday\"\r\n                }\r\n            ]\r\n        }\r\n    ],\r\n    \"attribute_groups\": [\r\n        {\r\n            \"id\": \"1978_2\",\r\n            \"name\": \"Acompanhamento\",\r\n            \"min\": 1,\r\n            \"max\": 1,\r\n            \"attributes\": [\r\n                \"1978_2_1908\",\r\n                \"1978_2_170\"\r\n            ]\r\n        },\r\n        {\r\n            \"id\": \"1978_3\",\r\n            \"name\": \"Bebida\",\r\n            \"min\": 1,\r\n            \"max\": 1,\r\n            \"attributes\": [\r\n                \"1978_3_399\",\r\n                \"1978_3_390\"\r\n            ]\r\n        },\r\n        {\r\n            \"id\": \"1978_1\",\r\n            \"name\": \"Menu Portuguesa\",\r\n            \"min\": 1,\r\n            \"max\": 1,\r\n            \"attributes\": [\r\n                \"1978_1_1976\"\r\n            ]\r\n        }\r\n    ],\r\n    \"attributes\": [\r\n        {\r\n            \"id\": \"1978_2_1908\",\r\n            \"name\": \"ARROZ THAI\",\r\n            \"price\": \"0.00\",\r\n            \"tax_rate\": 13,\r\n            \"obligatory\": false\r\n        },\r\n        {\r\n            \"id\": \"1978_2_170\",\r\n            \"name\": \"BATATA RODELA\",\r\n            \"price\": \"0.00\",\r\n            \"tax_rate\": 13,\r\n            \"obligatory\": false\r\n        },\r\n        {\r\n            \"id\": \"1978_3_399\",\r\n            \"name\": \"FANTA ANANAS\",\r\n            \"price\": \"0.00\",\r\n            \"tax_rate\": 23,\r\n            \"obligatory\": false\r\n        },\r\n        {\r\n            \"id\": \"1978_3_390\",\r\n            \"name\": \"FANTA LARANJA\",\r\n            \"price\": \"0.00\",\r\n            \"tax_rate\": 23,\r\n            \"obligatory\": false\r\n        },\r\n        {\r\n            \"id\": \"1978_1_1976\",\r\n            \"name\": \"CHAMPIGNON\",\r\n            \"price\": \"0.00\",\r\n            \"tax_rate\": 13,\r\n            \"obligatory\": false\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint_menu}}",
+							"host": [
+								"{{endpoint_menu}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ORDERS STATUS",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "TOKEN",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"order_id\": \"123123\",\r\n    \"status\": \"accepted\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint_order_status}}",
+							"host": [
+								"{{endpoint_order_status}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POS DATA",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "TOKEN",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{endpoint_pos_status}}",
+							"host": [
+								"{{endpoint_pos_status}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SET ONLINE POS",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "TOKEN",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{endpoint_pos_status}}",
+							"host": [
+								"{{endpoint_pos_status}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SET OFFLINE POS",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "TOKEN",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{endpoint_pos_status}}",
+							"host": [
+								"{{endpoint_pos_status}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for the API-ZSROI to communicate with integrated APP.\n\nThe integrator has to implement all these endpoints.\n\nIn these requests you need to change the endpoints for your endpoints configurated in [https://developer.zonesoft.org](https://developer.zonesoft.org)"
+		}
+	]
+}

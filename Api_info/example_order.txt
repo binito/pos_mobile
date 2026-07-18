@@ -1,0 +1,89 @@
+curl--location--request POST 'https://zsroi.zonesoft.org/v1.0/integration/order
+' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: {{APP-KEY}}' \
+--header 'X-Integration-Signature: {{SIGNATURE}}' \
+--data - raw '{
+    "order_id": "unique-order-id",
+    "store_id": "your_client_id", (disponivel no portal https://developer.zonesoft.org)
+    "type_order": "DELIVERY",
+    "order_time": "2026-06-26 12:24:53",
+    "estimated_pickup_time": "2026-06-26 12:45:44",
+    "currency": "EUR",
+    "delivery_fee": 0,
+    "courier": {
+        "name": "Flash",
+        "phone_number": "phone_number",
+        "license_plate": "AA-00-AA"
+    },
+    "customer": {
+        "name": "name",
+        "phone_number": "phone_number",
+        "nif": "NIF",
+        "email": "email"
+    },
+    "products": [{
+            "quantity": 1,
+            "price": 800,
+            "discount": 0,
+            "name": "PRODUT_NAME",
+            "id": "1978",
+            "obs": "PRODUCT_OBS",
+            "attributes": [{
+                    "quantity": 1,
+                    "id": "1978_2_1908",
+                    "name": "ARROZ THAI",
+                    "price": 0,
+                    "discount": 0,
+                    "obs": "ATTRIBUTE_OBS"
+                }, {
+                    "quantity": 1,
+                    "id": "1978_2_170",
+                    "name": "BATATA RODELA",
+                    "price": 0,
+                    "discount": 0,
+                    "obs": "ATTRIBUTE_OBS"
+                }, {
+                    "quantity": 1,
+                    "id": "1978_3_399",
+                    "name": "FANTA ANANAS",
+                    "price": 0,
+                    "discount": 0,
+                    "obs": "ATTRIBUTE_OBS",
+                    "packaging": {
+                        "id": "1991",
+                        "reference_name": "Deposit Return System (DRS)",
+                        "price": 10
+                    }
+                }
+            ]
+        }
+    ],
+    "obs": "PRODUT_NAME observations",
+    "orderIsAlreadyPaid": true,
+    "payment_type": 1,
+    "delivery_address": {
+        "label": "address",
+        "latitude": "latitude",
+        "longitude": "longitude"
+    },
+    "is_picked_up_by_customer": false,
+    "discounted_products_total": "partner_discounted_products_total",
+    "total_customer_to_pay": "total_customer_to_pay",
+    "payment_charges": {
+        "total": 800,
+        "sub_total": 0,
+        "tax": 0,
+        "total_fee": 0,
+        "total_fee_tax": 0,
+        "bag_fee": 0,
+        "delivery_fee": 0,
+        "delivery_fee_tax": 0,
+        "small_order_fee": 0,
+        "small_order_fee_tax": 0,
+        "pick_and_pack_fee": 0,
+        "pick_and_pack_fee_tax": 0,
+        "tip": 0
+    }
+}
+'
