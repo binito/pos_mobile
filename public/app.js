@@ -193,8 +193,12 @@ function bindEvents() {
     const chip = event.target.closest('[data-select-customer]');
     if (!chip) return;
     const name = chip.dataset.selectCustomer;
+    const mesa = chip.dataset.selectMesa;
     els.customerName.value = name;
-    showToast(`Cliente "${name}" selecionado.`);
+    if (mesa) {
+      els.mesaNumber.value = mesa;
+    }
+    showToast(mesa ? `Cliente "${name}" selecionado (Mesa ${mesa}).` : `Cliente "${name}" selecionado.`);
   });
 }
 
@@ -495,7 +499,6 @@ async function saveOrder() {
   }
 
   const wasEditing = Boolean(state.editingId);
-  const mesa = els.mesaNumber.value ? Number(els.mesaNumber.value) : null;
   els.saveOrderButton.disabled = true;
   setSync('A guardar');
 
@@ -504,7 +507,7 @@ async function saveOrder() {
     resetOrderForm();
     switchTab('orders');
 
-    if (mesa) {
+    if (order.mesa) {
       await sendOrderToTable(order.id);
     } else {
       showToast(wasEditing ? 'Pedido atualizado.' : `Pedido ${order.id} guardado.`);
@@ -1088,9 +1091,15 @@ function renderActiveCustomers() {
     const name = order.customer.name.trim();
     const nameLower = name.toLowerCase();
     const date = new Date(order.createdAt);
-    if (!nameMap.has(nameLower) || date > nameMap.get(nameLower).date) {
-      nameMap.set(nameLower, { name, date });
+    const entry = nameMap.get(nameLower) || { name, date, mesa: null };
+    if (date > entry.date) {
+      entry.date = date;
+      entry.name = name;
     }
+    if (order.mesa) {
+      entry.mesa = order.mesa;
+    }
+    nameMap.set(nameLower, entry);
   }
 
   const sortedNames = Array.from(nameMap.values())
@@ -1104,8 +1113,8 @@ function renderActiveCustomers() {
 
   els.activeCustomersContainer.hidden = false;
   els.activeCustomersList.innerHTML = sortedNames.map((item) => `
-    <button class="active-customer-chip" type="button" data-select-customer="${escapeHtml(item.name)}">
-      ${escapeHtml(item.name)}
+    <button class="active-customer-chip" type="button" data-select-customer="${escapeHtml(item.name)}" data-select-mesa="${item.mesa || ''}">
+      ${escapeHtml(item.name)}${item.mesa ? ` (Mesa ${escapeHtml(String(item.mesa))})` : ''}
     </button>
   `).join('');
 }

@@ -204,6 +204,20 @@ function findMesaConflict(orders, mesa, customerName, excludeOrderId) {
   ) || null;
 }
 
+function findExistingMesaForCustomer(orders, customerName, excludeOrderId) {
+  const normalizedName = (customerName || '').trim().toLowerCase();
+  if (!normalizedName) {
+    return null;
+  }
+  const match = orders.find((order) =>
+    order.id !== excludeOrderId &&
+    order.payment === 'pending' &&
+    order.mesa &&
+    (order.customer?.name || '').trim().toLowerCase() === normalizedName
+  );
+  return match ? match.mesa : null;
+}
+
 module.exports = {
   readOrders,
   writeOrders,
@@ -211,6 +225,7 @@ module.exports = {
   normalizeOrderPayload,
   normalizeItems,
   findMesaConflict,
+  findExistingMesaForCustomer,
   normalizeDueAt,
   orderSort,
   STATUS_VALUES,
