@@ -191,12 +191,26 @@ function orderSort(a, b) {
   return String(b.createdAt).localeCompare(String(a.createdAt));
 }
 
+function findMesaConflict(orders, mesa, customerName, excludeOrderId) {
+  if (!mesa) {
+    return null;
+  }
+  const normalizedName = (customerName || '').trim().toLowerCase();
+  return orders.find((order) =>
+    order.id !== excludeOrderId &&
+    order.mesa === mesa &&
+    order.payment === 'pending' &&
+    (order.customer?.name || '').trim().toLowerCase() !== normalizedName
+  ) || null;
+}
+
 module.exports = {
   readOrders,
   writeOrders,
   nextOrderId,
   normalizeOrderPayload,
   normalizeItems,
+  findMesaConflict,
   normalizeDueAt,
   orderSort,
   STATUS_VALUES,

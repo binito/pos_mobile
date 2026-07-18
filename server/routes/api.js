@@ -8,6 +8,7 @@ const {
   writeOrders,
   nextOrderId,
   normalizeOrderPayload,
+  findMesaConflict,
   orderSort,
   STATUS_VALUES,
   PAYMENT_VALUES
@@ -120,6 +121,10 @@ async function handleApi(req, res, url) {
     const payload = await parseBody(req);
     const orders = readOrders();
     let order = normalizeOrderPayload(payload);
+    const conflict = findMesaConflict(orders, order.mesa, order.customer?.name, null);
+    if (conflict) {
+      throw new HttpError(409, `A mesa ${order.mesa} já está atribuída a ${conflict.customer?.name || 'outro cliente'}.`);
+    }
     order.id = nextOrderId(orders);
     order = await sendOrderToZoneSoft(order);
     orders.push(order);
@@ -159,6 +164,10 @@ async function handleApi(req, res, url) {
       throw new HttpError(404, 'Pedido nao encontrado.');
     }
     let order = normalizeOrderPayload(payload, orders[index]);
+    const conflict = findMesaConflict(orders, order.mesa, order.customer?.name, orderId);
+    if (conflict) {
+      throw new HttpError(409, `A mesa ${order.mesa} já está atribuída a ${conflict.customer?.name || 'outro cliente'}.`);
+    }
     order.id = orders[index].id;
     order = await sendOrderToZoneSoft(order);
     orders[index] = order;
