@@ -900,11 +900,15 @@ async function deleteOrder(orderId) {
     const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}`, {
       method: 'DELETE'
     });
-    await parseApiResponse(response);
+    const data = await parseApiResponse(response);
     state.orders = state.orders.filter((entry) => entry.id !== orderId);
     renderOrders();
     renderProducts();
-    showToast('Pedido eliminado.');
+    if (data.tableRemoval && !data.tableRemoval.ok) {
+      showToast(`Pedido eliminado, mas falhou remover da mesa: ${data.tableRemoval.error || 'erro desconhecido'}.`, 'error');
+    } else {
+      showToast('Pedido eliminado.');
+    }
   } catch (error) {
     showToast(error.message, 'error');
     await loadOrders().catch(() => {});

@@ -1,7 +1,7 @@
-const CACHE_NAME = 'pos-mobile-orders-v16';
+const CACHE_NAME = 'pos-mobile-orders-v17';
 const STATIC_ASSETS = [
   '/styles.css?v=20260710-2',
-  '/app.js?v=20260718-2',
+  '/app.js?v=20260718-3',
   '/manifest.json',
   '/icon.svg',
   '/icon-192.png',

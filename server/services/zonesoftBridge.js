@@ -100,4 +100,18 @@ async function getMesaStatus(mesa) {
   return request('GET', `/mesa/${encodeURIComponent(mesa)}`);
 }
 
-module.exports = { sendItemsToTable, getMesaStatus, BRIDGE_URL };
+async function removeItemsFromTable(consumoIds) {
+  if (!consumoIds || consumoIds.length === 0) {
+    return { ok: true, removed: 0 };
+  }
+  if (!BRIDGE_TOKEN) {
+    return { ok: false, error: 'BRIDGE_TOKEN nao esta configurado.' };
+  }
+  try {
+    return await request('POST', '/remove-items', { ids: consumoIds });
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+}
+
+module.exports = { sendItemsToTable, getMesaStatus, removeItemsFromTable, BRIDGE_URL };

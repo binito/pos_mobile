@@ -14,7 +14,7 @@ const {
   PAYMENT_VALUES
 } = require('../services/orders');
 const { sendOrderToZoneSoft } = require('../services/zonesoft');
-const { sendItemsToTable } = require('../services/zonesoftBridge');
+const { sendItemsToTable, removeItemsFromTable } = require('../services/zonesoftBridge');
 
 const MAX_BODY_BYTES = 1024 * 1024;
 
@@ -203,12 +203,22 @@ async function handleApi(req, res, url) {
   if (orderMatch && req.method === 'DELETE') {
     const orderId = decodeURIComponent(orderMatch[1]);
     const orders = readOrders();
-    const nextOrders = orders.filter((order) => order.id !== orderId);
-    if (nextOrders.length === orders.length) {
+    const order = orders.find((entry) => entry.id === orderId);
+    if (!order) {
       throw new HttpError(404, 'Pedido nao encontrado.');
     }
+
+    let tableRemoval = null;
+    const sentIds = (order.tableSync?.results || [])
+      .filter((entry) => entry.ok && entry.id)
+      .map((entry) => entry.id);
+    if (sentIds.length > 0) {
+      tableRemoval = await removeItemsFromTable(sentIds);
+    }
+
+    const nextOrders = orders.filter((entry) => entry.id !== orderId);
     writeOrders(nextOrders);
-    sendJson(res, 200, { ok: true });
+    sendJson(res, 200, { ok: true, tableRemoval });
     return;
   }
 
