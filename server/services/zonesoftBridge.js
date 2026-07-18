@@ -96,4 +96,8 @@ async function sendItemsToTable(mesa, items) {
   };
 }
 
-module.exports = { sendItemsToTable, BRIDGE_URL };
+async function getMesaStatus(mesa) {
+  return request('GET', `/mesa/${encodeURIComponent(mesa)}`);
+}
+
+module.exports = { sendItemsToTable, getMesaStatus, BRIDGE_URL };

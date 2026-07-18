@@ -1,9 +1,11 @@
 const { createServer } = require('./server');
+const { startTableWatcher } = require('./services/tableWatcher');
 
 const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || '0.0.0.0';
 
 const server = createServer();
+startTableWatcher();
 
 function shutdown(signal) {
   console.log(`Recebido ${signal}; a fechar servidor HTTP.`);
