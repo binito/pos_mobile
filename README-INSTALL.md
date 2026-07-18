@@ -28,15 +28,19 @@ nem de nenhum outro computador.
 
 ## Instalar
 
-1. Copia `install.ps1` para o PC (ou descarrega diretamente do GitHub).
-2. Abre o PowerShell **como Administrador**.
-3. Corre:
+1. Abre o PowerShell **como Administrador** no PC onde o ZoneSoft está instalado.
+2. Corre este comando único (descarrega e arranca o instalador logo a seguir):
    ```powershell
-   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-   .\install.ps1
+   irm https://raw.githubusercontent.com/binito/pos_mobile/standalone-windows/install.ps1 | iex
    ```
-4. Segue as instruções — o script pergunta pela instância SQL, base de
+3. Segue as instruções — o script pergunta pela instância SQL, base de
    dados, posto/empregado a usar, e credenciais de login da app.
+4. No fim, o próprio script mostra o endereço de acesso (local e na rede,
+   para os telemóveis) e o login criado.
+
+Alternativa sem o comando único: copia `install.ps1` manualmente para o PC e
+corre `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; .\install.ps1`
+numa PowerShell como Administrador.
 
 O instalador:
 - Descarrega o código mais recente da branch `standalone-windows`.

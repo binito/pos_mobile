@@ -260,7 +260,15 @@ if (-not (Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContin
 # 13. Arrancar agora e resumo -----------------------------------------------
 Write-Step "A arrancar o pos_online"
 Start-ScheduledTask -TaskName $taskName
-Start-Sleep -Seconds 3
+
+$appOnline = $false
+for ($i = 0; $i -lt 10; $i++) {
+    Start-Sleep -Seconds 1
+    try {
+        $health = Invoke-RestMethod -Uri "http://localhost:$port/healthz" -TimeoutSec 2
+        if ($health.ok) { $appOnline = $true; break }
+    } catch {}
+}
 
 $localIp = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -like "192.168.*" -or $_.IPAddress -like "10.*" } | Select-Object -First 1).IPAddress
 
@@ -268,10 +276,25 @@ Write-Host ""
 Write-Host "=======================================" -ForegroundColor Green
 Write-Host " Instalacao concluida" -ForegroundColor Green
 Write-Host "=======================================" -ForegroundColor Green
-Write-Host "Acesso local:  http://localhost:$port"
-if ($localIp) {
-    Write-Host "Acesso na rede (telemoveis): http://$($localIp):$port"
+
+if ($appOnline) {
+    Write-Host "O pos_online esta a correr." -ForegroundColor Green
+} else {
+    Write-Warn2 "Nao consegui confirmar que o pos_online arrancou. Ve os logs em: Get-ScheduledTaskInfo -TaskName '$taskName'"
 }
-Write-Host "Login: $authUser"
+
+if ($schemaExit -ne 0) {
+    Write-Warn2 "A funcionalidade de mesas ficou desativada (esquema incompativel) - a app funciona so para tirar pedidos."
+}
+
 Write-Host ""
-Write-Host "Guarda esta informacao num local seguro."
+Write-Host "Acesso a partir deste PC:      http://localhost:$port"
+if ($localIp) {
+    Write-Host "Acesso na rede (telemoveis):    http://$($localIp):$port"
+}
+Write-Host ""
+Write-Host "Login da app:"
+Write-Host "  Utilizador: $authUser"
+Write-Host "  Password:   $authPass"
+Write-Host ""
+Write-Host "Guarda esta informacao (URL + login) num local seguro e partilha com o staff." -ForegroundColor Yellow
