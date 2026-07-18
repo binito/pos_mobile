@@ -136,6 +136,7 @@ async function handleApi(req, res, url) {
   const sendToTableMatch = url.pathname.match(/^\/api\/orders\/([^/]+)\/send-to-table$/);
   if (sendToTableMatch && req.method === 'POST') {
     const orderId = decodeURIComponent(sendToTableMatch[1]);
+    const payload = await parseBody(req);
     const orders = readOrders();
     const index = orders.findIndex((order) => order.id === orderId);
     if (index === -1) {
@@ -145,8 +146,13 @@ async function handleApi(req, res, url) {
     if (!order.mesa) {
       throw new HttpError(400, 'Este pedido nao tem mesa definida.');
     }
-    const tableSync = await sendItemsToTable(order.mesa, order.items);
-    order.tableSync = tableSync;
+    const itemsToSend = Array.isArray(payload.items) ? payload.items : order.items;
+    const sendResult = await sendItemsToTable(order.mesa, itemsToSend);
+    const previousResults = order.tableSync?.results || [];
+    order.tableSync = {
+      ...sendResult,
+      results: [...previousResults, ...sendResult.results]
+    };
     order.updatedAt = new Date().toISOString();
     orders[index] = order;
     writeOrders(orders);

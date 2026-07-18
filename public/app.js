@@ -518,9 +518,11 @@ async function saveOrder() {
   }
 }
 
-async function sendOrderToTable(orderId) {
+async function sendOrderToTable(orderId, items) {
   const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/send-to-table`, {
-    method: 'POST'
+    method: 'POST',
+    headers: items ? { 'Content-Type': 'application/json' } : undefined,
+    body: items ? JSON.stringify({ items }) : undefined
   });
   const data = await parseApiResponse(response);
   state.orders = state.orders.map((entry) => (entry.id === orderId ? data.order : entry));
@@ -929,6 +931,14 @@ async function duplicateOrder(orderId) {
   const order = state.orders.find((entry) => entry.id === orderId);
   if (!order) return;
 
+  const roundItems = (order.items || [])
+    .filter((item) => item.code && item.code !== 'MANUAL')
+    .map((item) => ({
+      code: item.code,
+      name: item.name,
+      qty: Number(item.repeatQty || 1)
+    }));
+
   const payload = {
     customer: {
       name: order.customer?.name || ''
@@ -956,7 +966,12 @@ async function duplicateOrder(orderId) {
     state.orders = state.orders.map((entry) => entry.id === orderId ? data.order : entry);
     renderOrders();
     renderProducts();
-    showToast('Quantidade atualizada no pedido.');
+
+    if (order.mesa && roundItems.length > 0) {
+      await sendOrderToTable(orderId, roundItems);
+    } else {
+      showToast('Quantidade atualizada no pedido.');
+    }
   } catch (error) {
     showToast(error.message, 'error');
     await loadOrders().catch(() => {});
