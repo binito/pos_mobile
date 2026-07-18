@@ -1,67 +1,33 @@
-const http = require('http');
-const { URL } = require('url');
+const mssql = require('./mssql');
 
-const BRIDGE_URL = process.env.BRIDGE_URL || 'http://192.168.1.192:8799';
-const BRIDGE_TOKEN = process.env.BRIDGE_TOKEN || '';
-const BRIDGE_TIMEOUT_MS = Number(process.env.BRIDGE_TIMEOUT_MS || 8000);
+let schemaOk = null;
 
-function request(method, path, body) {
-  return new Promise((resolve, reject) => {
-    const url = new URL(path, BRIDGE_URL);
-    const payload = body ? JSON.stringify(body) : null;
-
-    const req = http.request(
-      url,
-      {
-        method,
-        timeout: BRIDGE_TIMEOUT_MS,
-        headers: {
-          'X-Bridge-Token': BRIDGE_TOKEN,
-          ...(payload
-            ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }
-            : {})
-        }
-      },
-      (res) => {
-        const chunks = [];
-        res.on('data', (chunk) => chunks.push(chunk));
-        res.on('end', () => {
-          const raw = Buffer.concat(chunks).toString('utf8');
-          let parsed;
-          try {
-            parsed = raw ? JSON.parse(raw) : {};
-          } catch (error) {
-            reject(new Error(`Resposta invalida da bridge: ${raw.slice(0, 200)}`));
-            return;
-          }
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            resolve(parsed);
-          } else {
-            reject(new Error(parsed.error || `Bridge devolveu ${res.statusCode}`));
-          }
-        });
-      }
-    );
-
-    req.on('timeout', () => req.destroy(new Error('Timeout a contactar a bridge.')));
-    req.on('error', reject);
-    if (payload) req.write(payload);
-    req.end();
-  });
+async function ensureSchemaChecked() {
+  if (schemaOk === null) {
+    const problems = await mssql.checkSchema();
+    schemaOk = problems.length === 0;
+    if (!schemaOk) {
+      console.error('Aviso: esquema do SQL Server incompativel, funcionalidade de mesas desativada:');
+      problems.forEach((p) => console.error(`  - ${p}`));
+    }
+  }
+  return schemaOk;
 }
 
 async function sendItemsToTable(mesa, items) {
-  if (!BRIDGE_TOKEN) {
-    return {
-      status: 'error',
-      lastError: 'BRIDGE_TOKEN nao esta configurado.',
-      updatedAt: new Date().toISOString()
-    };
-  }
   if (!mesa) {
     return {
       status: 'error',
       lastError: 'O pedido nao tem mesa definida.',
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  const ok = await ensureSchemaChecked();
+  if (!ok) {
+    return {
+      status: 'error',
+      lastError: 'Esquema do SQL Server incompativel; a funcionalidade de mesas esta desativada. Ve os logs do servidor.',
       updatedAt: new Date().toISOString()
     };
   }
@@ -71,16 +37,14 @@ async function sendItemsToTable(mesa, items) {
 
   const results = [];
   for (const item of sendable) {
-    try {
-      const result = await request('POST', '/add-item', {
-        mesa,
-        codigo: Number(item.code),
-        qtd: item.qty
-      });
-      results.push({ code: item.code, name: item.name, ok: true, id: result.id });
-    } catch (error) {
-      results.push({ code: item.code, name: item.name, ok: false, error: error.message });
-    }
+    const result = await mssql.addItem(mesa, Number(item.code), item.qty);
+    results.push({
+      code: item.code,
+      name: item.name,
+      ok: result.ok,
+      id: result.id,
+      error: result.error
+    });
   }
 
   const failed = results.filter((entry) => !entry.ok);
@@ -97,21 +61,22 @@ async function sendItemsToTable(mesa, items) {
 }
 
 async function getMesaStatus(mesa) {
-  return request('GET', `/mesa/${encodeURIComponent(mesa)}`);
+  const ok = await ensureSchemaChecked();
+  if (!ok) {
+    return { ok: false, error: 'Esquema do SQL Server incompativel.' };
+  }
+  return mssql.getMesa(mesa);
 }
 
 async function removeItemsFromTable(consumoIds) {
   if (!consumoIds || consumoIds.length === 0) {
     return { ok: true, removed: 0 };
   }
-  if (!BRIDGE_TOKEN) {
-    return { ok: false, error: 'BRIDGE_TOKEN nao esta configurado.' };
+  const ok = await ensureSchemaChecked();
+  if (!ok) {
+    return { ok: false, error: 'Esquema do SQL Server incompativel.' };
   }
-  try {
-    return await request('POST', '/remove-items', { ids: consumoIds });
-  } catch (error) {
-    return { ok: false, error: error.message };
-  }
+  return mssql.removeItems(consumoIds);
 }
 
-module.exports = { sendItemsToTable, getMesaStatus, removeItemsFromTable, BRIDGE_URL };
+module.exports = { sendItemsToTable, getMesaStatus, removeItemsFromTable };

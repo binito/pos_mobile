@@ -1,5 +1,5 @@
 const { HttpError } = require('../middleware/error');
-const { readProductsFromDb } = require('./mariadb');
+const mssql = require('./mssql');
 
 const CACHE_TTL_MS = Number(process.env.PRODUCTS_CACHE_TTL_MS || 30000);
 
@@ -15,7 +15,7 @@ async function readProducts() {
     return inFlight;
   }
 
-  inFlight = readProductsFromDb()
+  inFlight = mssql.getProducts()
     .then((items) => {
       cache = { items, fetchedAt: Date.now() };
       inFlight = null;
@@ -24,10 +24,10 @@ async function readProducts() {
     .catch((error) => {
       inFlight = null;
       if (cache.items.length > 0) {
-        console.error('Erro ao atualizar produtos da base de dados; a usar cache anterior:', error.message);
+        console.error('Erro ao atualizar produtos do SQL Server; a usar cache anterior:', error.message);
         return cache.items;
       }
-      throw new HttpError(500, `Nao consegui ler produtos da base de dados: ${error.message}`);
+      throw new HttpError(500, `Nao consegui ler produtos do SQL Server: ${error.message}`);
     });
 
   return inFlight;
