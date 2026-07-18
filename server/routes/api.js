@@ -2,7 +2,7 @@ const { HttpError } = require('../middleware/error');
 const auth = require('../middleware/auth');
 const { sanitizeNext } = require('../utils/format');
 const { buildOrdersCsv } = require('../utils/csv');
-const { readProducts, PRODUCTS_CSV } = require('../services/products');
+const { readProducts } = require('../services/products');
 const {
   readOrders,
   writeOrders,
@@ -96,8 +96,8 @@ async function handleApi(req, res, url) {
 
   if (req.method === 'GET' && url.pathname === '/api/products') {
     sendJson(res, 200, {
-      source: PRODUCTS_CSV,
-      products: readProducts()
+      source: 'mariadb',
+      products: await readProducts()
     });
     return;
   }
@@ -121,7 +121,7 @@ async function handleApi(req, res, url) {
   if (req.method === 'POST' && url.pathname === '/api/orders') {
     const payload = await parseBody(req);
     const orders = readOrders();
-    let order = normalizeOrderPayload(payload);
+    let order = await normalizeOrderPayload(payload);
     if (!order.mesa) {
       order.mesa = findExistingMesaForCustomer(orders, order.customer?.name, null);
     }
@@ -173,7 +173,7 @@ async function handleApi(req, res, url) {
     if (index === -1) {
       throw new HttpError(404, 'Pedido nao encontrado.');
     }
-    let order = normalizeOrderPayload(payload, orders[index]);
+    let order = await normalizeOrderPayload(payload, orders[index]);
     if (!order.mesa) {
       order.mesa = findExistingMesaForCustomer(orders, order.customer?.name, orderId);
     }

@@ -35,5 +35,5 @@ process.on('unhandledRejection', (reason) => {
 
 server.listen(PORT, HOST, () => {
   console.log(`POS mobile a correr em http://${HOST}:${PORT}`);
-  console.log(`Produtos: ${process.env.PRODUCTS_CSV || '/home/jorge/Vscode/site/Produtos.csv'}`);
+  console.log(`Produtos: MariaDB ${process.env.MARIADB_DATABASE || 'zonesoft_full'} @ ${process.env.MARIADB_HOST || 'localhost'}`);
 });

@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { HttpError } = require('../middleware/error');
 const { safeString, roundMoney } = require('../utils/format');
-const { readProducts } = require('./products');
+const productsService = require('./products');
 
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', '..', 'data');
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
@@ -154,8 +154,8 @@ function normalizeItems(payloadItems, products) {
   }));
 }
 
-function normalizeOrderPayload(payload, existing = null) {
-  const products = readProducts();
+async function normalizeOrderPayload(payload, existing = null) {
+  const products = await productsService.readProducts();
   const items = normalizeItems(payload.items, products);
   const total = roundMoney(items.reduce((sum, item) => sum + item.lineTotal, 0));
   const now = new Date().toISOString();
