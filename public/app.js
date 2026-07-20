@@ -19,6 +19,7 @@ const STARTER_FREQUENT_CODES = [
 const state = {
   products: [],
   orders: [],
+  freeTables: [],
   selectedFamily: FREQUENT_FAMILY,
   cart: [],
   editingId: null,
@@ -84,6 +85,8 @@ function collectElements() {
     'toast',
     'btnViewIndividual',
     'btnViewGrouped',
+    'freeTablesContainer',
+    'freeTablesList',
     'activeCustomersContainer',
     'activeCustomersList'
   ].forEach((id) => {
@@ -200,6 +203,13 @@ function bindEvents() {
     }
     showToast(mesa ? `Cliente "${name}" selecionado (Mesa ${mesa}).` : `Cliente "${name}" selecionado.`);
   });
+
+  els.freeTablesList.addEventListener('click', (event) => {
+    const chip = event.target.closest('[data-select-mesa]');
+    if (!chip) return;
+    els.mesaNumber.value = chip.dataset.selectMesa;
+    showToast(`Mesa ${chip.dataset.selectMesa} selecionada.`);
+  });
 }
 
 async function loadInitialData() {
@@ -218,6 +228,17 @@ async function loadInitialData() {
     setSync('Erro', true);
     showToast(error.message, 'error');
   }
+  loadFreeTables();
+}
+
+async function loadFreeTables() {
+  try {
+    const payload = await apiGet('/api/mesas-livres');
+    state.freeTables = payload.ok ? (payload.mesas || []) : [];
+  } catch (error) {
+    state.freeTables = [];
+  }
+  renderFreeTables();
 }
 
 async function loadOrders() {
@@ -249,6 +270,7 @@ function renderAll() {
   renderProducts();
   renderCart();
   renderOrders();
+  renderFreeTables();
 }
 
 function switchTab(tab) {
@@ -263,6 +285,10 @@ function switchTab(tab) {
   if (tab === 'orders') {
     renderOrders();
     loadOrders().catch(() => {});
+  }
+
+  if (tab === 'new') {
+    loadFreeTables();
   }
 }
 
@@ -509,8 +535,12 @@ async function saveOrder() {
 
     if (order.mesa) {
       await sendOrderToTable(order.id);
+      loadFreeTables();
+    } else if (!wasEditing) {
+      showToast(`Pedido ${order.id} guardado, mas nao ha mesas livres - define uma mesa manualmente.`, 'error');
+      setSync('Sem mesa livre', true);
     } else {
-      showToast(wasEditing ? 'Pedido atualizado.' : `Pedido ${order.id} guardado.`);
+      showToast('Pedido atualizado.');
       setSync('Atualizado');
     }
   } catch (error) {
@@ -1083,6 +1113,21 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
+function renderFreeTables() {
+  if (!state.freeTables.length) {
+    els.freeTablesContainer.hidden = true;
+    els.freeTablesList.innerHTML = '';
+    return;
+  }
+
+  els.freeTablesContainer.hidden = false;
+  els.freeTablesList.innerHTML = state.freeTables.map((mesa) => `
+    <button class="active-customer-chip" type="button" data-select-mesa="${escapeHtml(String(mesa))}">
+      Mesa ${escapeHtml(String(mesa))}
+    </button>
+  `).join('');
+}
+
 function renderActiveCustomers() {
   const pendingOrders = state.orders.filter((order) => order.payment === 'pending' && order.customer?.name?.trim());
   const nameMap = new Map();
@@ -1121,6 +1166,6 @@ function renderActiveCustomers() {
 
 function registerServiceWorker() {
   if ('serviceWorker' in navigator && window.isSecureContext) {
-    navigator.serviceWorker.register('/sw.js?v=20260710-3').catch(() => {});
+    navigator.serviceWorker.register('/sw.js?v=20260720-2').catch(() => {});
   }
 }

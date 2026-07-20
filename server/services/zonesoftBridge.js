@@ -68,6 +68,18 @@ async function getMesaStatus(mesa) {
   return mssql.getMesa(mesa);
 }
 
+async function getFreeTables() {
+  const ok = await ensureSchemaChecked();
+  if (!ok) {
+    return { ok: false, error: 'Esquema do SQL Server incompativel.', mesas: [] };
+  }
+  try {
+    return await mssql.getFreeTables();
+  } catch (error) {
+    return { ok: false, error: error.message, mesas: [] };
+  }
+}
+
 async function removeItemsFromTable(consumoIds) {
   if (!consumoIds || consumoIds.length === 0) {
     return { ok: true, removed: 0 };
@@ -79,4 +91,4 @@ async function removeItemsFromTable(consumoIds) {
   return mssql.removeItems(consumoIds);
 }
 
-module.exports = { sendItemsToTable, getMesaStatus, removeItemsFromTable };
+module.exports = { sendItemsToTable, getMesaStatus, removeItemsFromTable, getFreeTables };

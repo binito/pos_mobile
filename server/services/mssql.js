@@ -134,6 +134,14 @@ async function addItem(mesa, codigo, qtd) {
         )
       `);
 
+    // Marca a mesa como ocupada no mapa de mesas do ZoneSoft. O ZoneSoft
+    // repoe estado=0 quando a conta e paga pela via normal, mas nunca volta
+    // a por estado=2 quando somos nos a inserir artigos por SQL - sem isto
+    // a mesa fica com itens mas aparece "livre" no mapa e a equipa nao a ve.
+    await new sql.Request(transaction)
+      .input('mesa', sql.Int, mesa)
+      .query('UPDATE dbo.mapamesas SET estado = 2 WHERE numeroobjecto = @mesa AND tipoobjecto = 0 AND estado <> 2');
+
     await transaction.commit();
     return { ok: true, id: newId, descricao, valor };
   } catch (error) {
@@ -183,22 +191,53 @@ async function getMesa(mesa) {
   };
 }
 
+async function getFreeTables() {
+  const pool = await getPool();
+  const result = await pool.request().query(
+    'SELECT numeroobjecto FROM dbo.mapamesas WHERE tipoobjecto = 0 AND estado = 0 ORDER BY numeroobjecto'
+  );
+  return { ok: true, mesas: result.recordset.map((r) => r.numeroobjecto) };
+}
+
 async function removeItems(ids) {
   if (!ids || ids.length === 0) {
     return { ok: true, removed: 0 };
   }
   try {
     const pool = await getPool();
+
+    const lookup = pool.request();
+    const lookupPlaceholders = ids.map((id, i) => {
+      lookup.input(`id${i}`, sql.Int, id);
+      return `@id${i}`;
+    });
+    const mesasResult = await lookup.query(
+      `SELECT DISTINCT mesa FROM dbo.consumo WHERE id IN (${lookupPlaceholders.join(',')})`
+    );
+    const affectedMesas = mesasResult.recordset.map((r) => r.mesa);
+
     const request = pool.request();
     const placeholders = ids.map((id, i) => {
       request.input(`id${i}`, sql.Int, id);
       return `@id${i}`;
     });
     const result = await request.query(`DELETE FROM dbo.consumo WHERE id IN (${placeholders.join(',')})`);
+
+    for (const mesa of affectedMesas) {
+      const countResult = await pool.request()
+        .input('mesa', sql.Int, mesa)
+        .query('SELECT COUNT(*) AS n FROM dbo.consumo WHERE mesa = @mesa');
+      if (countResult.recordset[0].n === 0) {
+        await pool.request()
+          .input('mesa', sql.Int, mesa)
+          .query('UPDATE dbo.mapamesas SET estado = 0 WHERE numeroobjecto = @mesa AND tipoobjecto = 0 AND estado <> 0');
+      }
+    }
+
     return { ok: true, removed: result.rowsAffected[0] };
   } catch (error) {
     return { ok: false, error: error.message };
   }
 }
 
-module.exports = { getPool, checkSchema, addItem, getMesa, removeItems, getProducts, REQUIRED_SCHEMA };
+module.exports = { getPool, checkSchema, addItem, getMesa, removeItems, getProducts, getFreeTables, REQUIRED_SCHEMA };

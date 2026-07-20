@@ -15,7 +15,7 @@ const {
   PAYMENT_VALUES
 } = require('../services/orders');
 const { sendOrderToZoneSoft } = require('../services/zonesoft');
-const { sendItemsToTable, removeItemsFromTable } = require('../services/zonesoftBridge');
+const { sendItemsToTable, removeItemsFromTable, getFreeTables } = require('../services/zonesoftBridge');
 
 const MAX_BODY_BYTES = 1024 * 1024;
 
@@ -36,6 +36,17 @@ function sendText(res, status, body, contentType = 'text/plain; charset=utf-8', 
     ...extraHeaders
   });
   res.end(body);
+}
+
+async function pickFreeMesa(orders) {
+  const result = await getFreeTables();
+  if (!result.ok || !Array.isArray(result.mesas) || result.mesas.length === 0) {
+    return null;
+  }
+  const usedByPending = new Set(
+    orders.filter((entry) => entry.payment === 'pending' && entry.mesa).map((entry) => entry.mesa)
+  );
+  return result.mesas.find((mesa) => !usedByPending.has(mesa)) || null;
 }
 
 function parseBody(req) {
@@ -109,6 +120,12 @@ async function handleApi(req, res, url) {
     return;
   }
 
+  if (req.method === 'GET' && url.pathname === '/api/mesas-livres') {
+    const result = await getFreeTables();
+    sendJson(res, 200, { ok: Boolean(result.ok), mesas: result.mesas || [], error: result.error || null });
+    return;
+  }
+
   if (req.method === 'GET' && url.pathname === '/api/export.csv') {
     const csv = buildOrdersCsv(readOrders());
     sendText(res, 200, csv, 'text/csv; charset=utf-8', {
@@ -124,6 +141,9 @@ async function handleApi(req, res, url) {
     let order = await normalizeOrderPayload(payload);
     if (!order.mesa) {
       order.mesa = findExistingMesaForCustomer(orders, order.customer?.name, null);
+    }
+    if (!order.mesa) {
+      order.mesa = await pickFreeMesa(orders);
     }
     const conflict = findMesaConflict(orders, order.mesa, order.customer?.name, null);
     if (conflict) {
@@ -176,6 +196,9 @@ async function handleApi(req, res, url) {
     let order = await normalizeOrderPayload(payload, orders[index]);
     if (!order.mesa) {
       order.mesa = findExistingMesaForCustomer(orders, order.customer?.name, orderId);
+    }
+    if (!order.mesa) {
+      order.mesa = await pickFreeMesa(orders);
     }
     const conflict = findMesaConflict(orders, order.mesa, order.customer?.name, orderId);
     if (conflict) {
