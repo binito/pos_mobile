@@ -536,8 +536,11 @@ async function saveOrder() {
     if (order.mesa) {
       await sendOrderToTable(order.id);
       loadFreeTables();
+    } else if (!wasEditing) {
+      showToast(`Pedido ${order.id} guardado, mas nao ha mesas livres - define uma mesa manualmente.`, 'error');
+      setSync('Sem mesa livre', true);
     } else {
-      showToast(wasEditing ? 'Pedido atualizado.' : `Pedido ${order.id} guardado.`);
+      showToast('Pedido atualizado.');
       setSync('Atualizado');
     }
   } catch (error) {
@@ -1163,6 +1166,6 @@ function renderActiveCustomers() {
 
 function registerServiceWorker() {
   if ('serviceWorker' in navigator && window.isSecureContext) {
-    navigator.serviceWorker.register('/sw.js?v=20260720-1').catch(() => {});
+    navigator.serviceWorker.register('/sw.js?v=20260720-2').catch(() => {});
   }
 }

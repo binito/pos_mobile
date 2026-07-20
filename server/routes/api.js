@@ -38,6 +38,17 @@ function sendText(res, status, body, contentType = 'text/plain; charset=utf-8', 
   res.end(body);
 }
 
+async function pickFreeMesa(orders) {
+  const result = await getFreeTables();
+  if (!result.ok || !Array.isArray(result.mesas) || result.mesas.length === 0) {
+    return null;
+  }
+  const usedByPending = new Set(
+    orders.filter((entry) => entry.payment === 'pending' && entry.mesa).map((entry) => entry.mesa)
+  );
+  return result.mesas.find((mesa) => !usedByPending.has(mesa)) || null;
+}
+
 function parseBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -131,6 +142,9 @@ async function handleApi(req, res, url) {
     if (!order.mesa) {
       order.mesa = findExistingMesaForCustomer(orders, order.customer?.name, null);
     }
+    if (!order.mesa) {
+      order.mesa = await pickFreeMesa(orders);
+    }
     const conflict = findMesaConflict(orders, order.mesa, order.customer?.name, null);
     if (conflict) {
       throw new HttpError(409, `A mesa ${order.mesa} já está atribuída a ${conflict.customer?.name || 'outro cliente'}.`);
@@ -182,6 +196,9 @@ async function handleApi(req, res, url) {
     let order = await normalizeOrderPayload(payload, orders[index]);
     if (!order.mesa) {
       order.mesa = findExistingMesaForCustomer(orders, order.customer?.name, orderId);
+    }
+    if (!order.mesa) {
+      order.mesa = await pickFreeMesa(orders);
     }
     const conflict = findMesaConflict(orders, order.mesa, order.customer?.name, orderId);
     if (conflict) {
