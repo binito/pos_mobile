@@ -15,7 +15,7 @@ const {
   PAYMENT_VALUES
 } = require('../services/orders');
 const { sendOrderToZoneSoft } = require('../services/zonesoft');
-const { sendItemsToTable, removeItemsFromTable } = require('../services/zonesoftBridge');
+const { sendItemsToTable, removeItemsFromTable, getFreeTables } = require('../services/zonesoftBridge');
 
 const MAX_BODY_BYTES = 1024 * 1024;
 
@@ -106,6 +106,12 @@ async function handleApi(req, res, url) {
     sendJson(res, 200, {
       orders: readOrders().sort(orderSort)
     });
+    return;
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/mesas-livres') {
+    const result = await getFreeTables();
+    sendJson(res, 200, { ok: Boolean(result.ok), mesas: result.mesas || [], error: result.error || null });
     return;
   }
 

@@ -100,6 +100,17 @@ async function getMesaStatus(mesa) {
   return request('GET', `/mesa/${encodeURIComponent(mesa)}`);
 }
 
+async function getFreeTables() {
+  if (!BRIDGE_TOKEN) {
+    return { ok: false, error: 'BRIDGE_TOKEN nao esta configurado.', mesas: [] };
+  }
+  try {
+    return await request('GET', '/mesas-livres');
+  } catch (error) {
+    return { ok: false, error: error.message, mesas: [] };
+  }
+}
+
 async function removeItemsFromTable(consumoIds) {
   if (!consumoIds || consumoIds.length === 0) {
     return { ok: true, removed: 0 };
@@ -114,4 +125,4 @@ async function removeItemsFromTable(consumoIds) {
   }
 }
 
-module.exports = { sendItemsToTable, getMesaStatus, removeItemsFromTable, BRIDGE_URL };
+module.exports = { sendItemsToTable, getMesaStatus, removeItemsFromTable, getFreeTables, BRIDGE_URL };
