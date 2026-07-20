@@ -20,6 +20,7 @@ const state = {
   products: [],
   orders: [],
   freeTables: [],
+  freeTablesExpanded: false,
   selectedFamily: FREQUENT_FAMILY,
   cart: [],
   editingId: null,
@@ -86,6 +87,7 @@ function collectElements() {
     'btnViewIndividual',
     'btnViewGrouped',
     'freeTablesContainer',
+    'freeTablesToggle',
     'freeTablesList',
     'activeCustomersContainer',
     'activeCustomersList'
@@ -204,10 +206,17 @@ function bindEvents() {
     showToast(mesa ? `Cliente "${name}" selecionado (Mesa ${mesa}).` : `Cliente "${name}" selecionado.`);
   });
 
+  els.freeTablesToggle.addEventListener('click', () => {
+    state.freeTablesExpanded = !state.freeTablesExpanded;
+    renderFreeTables();
+  });
+
   els.freeTablesList.addEventListener('click', (event) => {
     const chip = event.target.closest('[data-select-mesa]');
     if (!chip) return;
     els.mesaNumber.value = chip.dataset.selectMesa;
+    state.freeTablesExpanded = false;
+    renderFreeTables();
     showToast(`Mesa ${chip.dataset.selectMesa} selecionada.`);
   });
 }
@@ -578,12 +587,14 @@ async function sendOrderToTable(orderId, items) {
 function resetOrderForm() {
   state.editingId = null;
   state.cart = [];
+  state.freeTablesExpanded = false;
   els.customerName.value = '';
   els.mesaNumber.value = '';
   els.paymentSelect.value = 'pending';
   closeCartSheet();
   renderCart();
   renderProducts();
+  renderFreeTables();
 }
 
 function renderOrders() {
@@ -1121,6 +1132,10 @@ function renderFreeTables() {
   }
 
   els.freeTablesContainer.hidden = false;
+  els.freeTablesToggle.textContent = state.freeTablesExpanded
+    ? 'Esconder mesas livres'
+    : `+ Escolher mesa livre (${state.freeTables.length})`;
+  els.freeTablesList.hidden = !state.freeTablesExpanded;
   els.freeTablesList.innerHTML = state.freeTables.map((mesa) => `
     <button class="active-customer-chip" type="button" data-select-mesa="${escapeHtml(String(mesa))}">
       Mesa ${escapeHtml(String(mesa))}
@@ -1166,6 +1181,6 @@ function renderActiveCustomers() {
 
 function registerServiceWorker() {
   if ('serviceWorker' in navigator && window.isSecureContext) {
-    navigator.serviceWorker.register('/sw.js?v=20260720-2').catch(() => {});
+    navigator.serviceWorker.register('/sw.js?v=20260720-3').catch(() => {});
   }
 }
