@@ -1135,7 +1135,9 @@ function renderFreeTables() {
   els.freeTablesToggle.textContent = state.freeTablesExpanded
     ? 'Esconder mesas livres'
     : `+ Escolher mesa livre (${state.freeTables.length})`;
-  els.freeTablesList.hidden = !state.freeTablesExpanded;
+  // Nota: a classe active-customers-list define display:flex no CSS, que
+  // sobrepoe-se ao atributo "hidden" - por isso usa-se style.display aqui.
+  els.freeTablesList.style.display = state.freeTablesExpanded ? '' : 'none';
   els.freeTablesList.innerHTML = state.freeTables.map((mesa) => `
     <button class="active-customer-chip" type="button" data-select-mesa="${escapeHtml(String(mesa))}">
       Mesa ${escapeHtml(String(mesa))}
@@ -1181,6 +1183,6 @@ function renderActiveCustomers() {
 
 function registerServiceWorker() {
   if ('serviceWorker' in navigator && window.isSecureContext) {
-    navigator.serviceWorker.register('/sw.js?v=20260720-3').catch(() => {});
+    navigator.serviceWorker.register('/sw.js?v=20260720-4').catch(() => {});
   }
 }
